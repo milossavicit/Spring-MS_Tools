@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+          http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+          http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd">
+    
+    <context:component-scan base-package="com.metropolitan.it495" />
+    <mvc:annotation-driven />
+    <mvc:default-servlet-handler />
+    
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/jsp/" />
+        <property name="suffix" value=".jsp" />
+    </bean>
+    
+    <bean id="localeResolver" class="org.springframework.web.servlet.i18n.SessionLocaleResolver" >
+        <property name="defaultLocale" value="sr" />
+    </bean>
+    
+    <!--Kako bi Hibernate mogao da se poveže na bazu podataka potrebno je kreirati sesiju. -->
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <property name="configLocation" >
+            <!-- Dodavanje path-a na kome se nalaze podešavanja za Hibernate -->
+            <value>classpath:hibernate.cfg.xml</value>
+        </property>
+        <!-- Dodavanje path-a paketa u kome se nalaze entity fajlovi na osnovu kojih
+        će Hibernate kreirati bazu i upisivati u nju-->
+        <property name="packagesToScan">
+            <list>
+                <value>com.metropolitan.it495.entity</value>
+            </list>
+        </property>
+    </bean>
+    
+    <!--Transakcija se dešava između baze i programa korišćenjem Transaction Manager-a
+    Transaction Manager koristi sesiju koju smo definisali iznad    -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    <tx:annotation-driven/>
+     
+    <bean id="transactionManager"  class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory" />
+    </bean>
+ 
+    <bean id="crudDao" class="com.metropolitan.it495.dao.impl.CRUDDaoImpl"></bean>
+    
+    <bean id="persistenceExceptionTranslationPostProcessor"
+          class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"/>
+    
+    <mvc:annotation-driven conversion-service="conversionService" />
+    
+    <bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
+        <property name="converters">
+            <set>
+                <bean class="com.metropolitan.it495.converter.IntegerToCategory" />
+                <bean class="com.metropolitan.it495.converter.IntegerToCustomer" />
+                <bean class="com.metropolitan.it495.converter.IntegerToProduct" />
+                <bean class="com.metropolitan.it495.converter.IntegerToMachine" />
+            </set>
+        </property>
+    </bean>
+    
+    
+    <!-- File upload -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"></bean>
+    
+</beans>
